@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 crossterm = "0.26"
 tui = { package = "ratatui", version = "0.22.0" }
+colored = "3.0.0"

@@ -1,11 +1,13 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io;
+use colored::Colorize;
 
 mod arch_tui;
+mod arch_operations;
 
 fn get_distribution() -> Option<String> {
-    println!("Detecting linux distribution...");
+    println!("{}", "Detecting distribution...".bold());
     let file = File::open("/etc/os-release").ok()?; // opens /etc/release
     let reader = BufReader::new(file);
     
