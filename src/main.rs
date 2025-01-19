@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io;
 
+mod arch_tui;
+
 fn get_distribution() -> Option<String> {
     println!("Detecting linux distribution...");
     let file = File::open("/etc/os-release").ok()?; // opens /etc/release
@@ -23,8 +25,10 @@ fn handle_debian() {
 }
 
 fn handle_arch() {
-    println!("Handling Arch-based distribution");
-    // Add arch-specific logic here
+    let mut tui = arch_tui::ArchTui::new();
+    if let Err(e) = tui.run() {
+        eprintln!("Error running Arch TUI: {}", e);
+    }
 }
 
 fn handle_fedora() {
