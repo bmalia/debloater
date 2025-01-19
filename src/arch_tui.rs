@@ -39,22 +39,22 @@ impl ArchTui {
             MenuItem { name: "Package management".to_string(), is_category: true, selected: false, indent_level: 0 },
             MenuItem { name: "Clean cache".to_string(), is_category: false, selected: false, indent_level: 1 },
             MenuItem { name: "Remove orphaned packages".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Manual unused package removal".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "Manual unused package removal (coming soon)".to_string(), is_category: false, selected: false, indent_level: 1 },
             
             MenuItem { name: "Flatpack management".to_string(), is_category: true, selected: false, indent_level: 0 },
             MenuItem { name: "Repair libraries".to_string(), is_category: false, selected: false, indent_level: 1 },
             MenuItem { name: "Remove unused libraries".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Manual unused flatpak removal".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Change installation directory".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "Manual unused flatpak removal (coming soon)".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "Change installation directory (coming soon)".to_string(), is_category: false, selected: false, indent_level: 1 },
             
             MenuItem { name: "Cache and logs".to_string(), is_category: true, selected: false, indent_level: 0 },
             MenuItem { name: "Clear systemd journal".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Clean general logs".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "Clean general logs (depracated)".to_string(), is_category: false, selected: false, indent_level: 1 },
             MenuItem { name: "Clean user cache".to_string(), is_category: false, selected: false, indent_level: 1 },
             
             MenuItem { name: "Config".to_string(), is_category: true, selected: false, indent_level: 0 },
             MenuItem { name: "pac* file management".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Manual orphaned config removal".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "Manual orphaned config removal (coming soon)".to_string(), is_category: false, selected: false, indent_level: 1 },
         ];
         
         let mut state = ListState::default();
