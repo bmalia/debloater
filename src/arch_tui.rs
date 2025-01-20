@@ -13,6 +13,7 @@ use tui::{
 };
 use std::io;
 use crate::arch_operations::ArchOperation;
+use crate::operation_descriptions::get_description;
 
 #[derive(Clone)]
 struct MenuItem {
@@ -49,7 +50,7 @@ impl ArchTui {
             
             MenuItem { name: "Cache and logs".to_string(), is_category: true, selected: false, indent_level: 0 },
             MenuItem { name: "Clear systemd journal".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Clean general logs (depracated)".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "Clean general logs (deprecated)".to_string(), is_category: false, selected: false, indent_level: 1 },
             MenuItem { name: "Clean user cache".to_string(), is_category: false, selected: false, indent_level: 1 },
             
             MenuItem { name: "Config".to_string(), is_category: true, selected: false, indent_level: 0 },
@@ -182,6 +183,106 @@ impl ArchTui {
         f.render_widget(cancel, button_layout[1]);
     }
 
+    fn draw_selection_screen<B: tui::backend::Backend>(
+        &self,
+        f: &mut tui::Frame<B>,
+        size: tui::layout::Rect,
+    ) {
+        let main_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(30),
+                Constraint::Percentage(70),
+            ].as_ref())
+            .split(size);
+
+        // Description panel on the left
+        let description = if let Some(selected) = self.state.selected() {
+            let item = &self.items[selected];
+            if !item.is_category {
+                let desc = get_description(&item.name);
+                vec![
+                    Spans::from(Span::styled(desc.title, Style::default().add_modifier(Modifier::BOLD))),
+                    Spans::from(""),
+                    Spans::from(desc.description),
+                ]
+            } else {
+                vec![Spans::from("Select an operation to see its description")]
+            }
+        } else {
+            vec![Spans::from("Select an operation to see its description")]
+        };
+
+        let description_widget = Paragraph::new(description)
+            .block(Block::default().borders(Borders::ALL).title("Description"))
+            .wrap(tui::widgets::Wrap { trim: true });
+        f.render_widget(description_widget, main_chunks[0]);
+
+        // Right side (operations list and buttons)
+        let right_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Min(3),
+                Constraint::Length(3),
+            ].as_ref())
+            .split(main_chunks[1]);
+
+        let items: Vec<ListItem> = self.items
+            .iter()
+            .map(|item| {
+                let indent = "  ".repeat(item.indent_level);
+                let prefix = if item.is_category {
+                    format!("{}{} ", indent, if item.selected { "[x]" } else { "[ ]" })
+                } else {
+                    format!("{}{} ", indent, if item.selected { "[x]" } else { "[ ]" })
+                };
+                let style = if item.is_category {
+                    Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+                ListItem::new(format!("{}{}", prefix, item.name)).style(style)
+            })
+            .collect();
+
+        let list = List::new(items)
+            .block(Block::default().borders(Borders::ALL).title("Select operations to perform"))
+            .highlight_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+            .highlight_symbol(">> ");
+
+        f.render_stateful_widget(list, right_chunks[0], &mut self.state.clone());
+
+        // Bottom buttons
+        let button_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(50),
+                Constraint::Percentage(50),
+            ].as_ref())
+            .split(right_chunks[1]);
+
+        let confirm_text = Spans::from(vec![
+            Span::styled("Press ", Style::default()),
+            Span::styled("c", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+            Span::styled(" to confirm", Style::default()),
+        ]);
+        let exit_text = Spans::from(vec![
+            Span::styled("Press ", Style::default()),
+            Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+            Span::styled(" to exit", Style::default()),
+        ]);
+
+        let confirm_block = Paragraph::new(confirm_text)
+            .block(Block::default().borders(Borders::ALL))
+            .alignment(tui::layout::Alignment::Center);
+        let exit_block = Paragraph::new(exit_text)
+            .block(Block::default().borders(Borders::ALL))
+            .alignment(tui::layout::Alignment::Center);
+
+        f.render_widget(confirm_block, button_layout[0]);
+        f.render_widget(exit_block, button_layout[1]);
+    }
+
     pub fn run(&mut self) -> Result<(), io::Error> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
@@ -193,73 +294,8 @@ impl ArchTui {
             terminal.draw(|f| {
                 let size = f.size();
                 match self.current_screen {
-                    Screen::Selection => {
-                        let chunks = Layout::default()
-                            .direction(Direction::Vertical)
-                            .constraints([
-                                Constraint::Min(3),
-                                Constraint::Length(3),
-                            ].as_ref())
-                            .split(size);
-
-                        let items: Vec<ListItem> = self.items
-                            .iter()
-                            .map(|item| {
-                                let indent = "  ".repeat(item.indent_level);
-                                let prefix = if item.is_category {
-                                    format!("{}{} ", indent, if item.selected { "[x]" } else { "[ ]" })
-                                } else {
-                                    format!("{}{} ", indent, if item.selected { "[x]" } else { "[ ]" })
-                                };
-                                let style = if item.is_category {
-                                    Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
-                                } else {
-                                    Style::default()
-                                };
-                                ListItem::new(format!("{}{}", prefix, item.name)).style(style)
-                            })
-                            .collect();
-
-                        let list = List::new(items)
-                            .block(Block::default().borders(Borders::ALL).title("Select operations to perform with the arrow keys and enter"))
-                            .highlight_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
-                            .highlight_symbol(">> ");
-
-                        f.render_stateful_widget(list, chunks[0], &mut self.state);
-
-                        // Bottom buttons
-                        let button_layout = Layout::default()
-                            .direction(Direction::Horizontal)
-                            .constraints([
-                                Constraint::Percentage(50),
-                                Constraint::Percentage(50),
-                            ].as_ref())
-                            .split(chunks[1]);
-
-                        let confirm_text = Spans::from(vec![
-                            Span::styled("Press ", Style::default()),
-                            Span::styled("c", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
-                            Span::styled(" to confirm", Style::default()),
-                        ]);
-                        let exit_text = Spans::from(vec![
-                            Span::styled("Press ", Style::default()),
-                            Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                            Span::styled(" to exit", Style::default()),
-                        ]);
-
-                        let confirm_block = Paragraph::new(confirm_text)
-                            .block(Block::default().borders(Borders::ALL))
-                            .alignment(tui::layout::Alignment::Center);
-                        let exit_block = Paragraph::new(exit_text)
-                            .block(Block::default().borders(Borders::ALL))
-                            .alignment(tui::layout::Alignment::Center);
-
-                        f.render_widget(confirm_block, button_layout[0]);
-                        f.render_widget(exit_block, button_layout[1]);
-                    }
-                    Screen::Confirmation => {
-                        self.draw_confirmation_screen(f, size);
-                    }
+                    Screen::Selection => self.draw_selection_screen(f, size),
+                    Screen::Confirmation => self.draw_confirmation_screen(f, size),
                 }
             })?;
 

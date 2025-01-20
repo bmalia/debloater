@@ -5,6 +5,7 @@ use colored::Colorize;
 
 mod arch_tui;
 mod arch_operations;
+mod operation_descriptions;
 
 fn get_distribution() -> Option<String> {
     println!("{}", "Detecting distribution...".bold());
