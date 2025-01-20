@@ -12,7 +12,7 @@ use tui::{
     Terminal,
 };
 use std::io;
-use crate::arch_operations::ArchOperation;
+use crate::arch::operations::ArchOperation;
 use crate::operation_descriptions::get_description;
 
 #[derive(Clone)]
