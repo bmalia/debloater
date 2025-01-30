@@ -38,8 +38,7 @@ impl DebianTui {
     pub fn new() -> DebianTui {
         let items = vec![
             MenuItem { name: "Package management".to_string(), is_category: true, selected: false, indent_level: 0 },
-            MenuItem { name: "Clean cache".to_string(), is_category: false, selected: false, indent_level: 1 },
-            MenuItem { name: "Remove orphaned packages".to_string(), is_category: false, selected: false, indent_level: 1 },
+            MenuItem { name: "APT Repair".to_string(), is_category: false, selected: false, indent_level: 1 },
             MenuItem { name: "Manual unused package removal (coming soon)".to_string(), is_category: false, selected: false, indent_level: 1 },
             
             MenuItem { name: "Flatpack management".to_string(), is_category: true, selected: false, indent_level: 0 },
@@ -54,13 +53,12 @@ impl DebianTui {
             MenuItem { name: "Clean user cache".to_string(), is_category: false, selected: false, indent_level: 1 },
             
             MenuItem { name: "Config".to_string(), is_category: true, selected: false, indent_level: 0 },
-            MenuItem { name: "pac* file management".to_string(), is_category: false, selected: false, indent_level: 1 },
             MenuItem { name: "Manual orphaned config removal (coming soon)".to_string(), is_category: false, selected: false, indent_level: 1 },
         ];
         
         let mut state = ListState::default();
         state.select(Some(0));
-        ArchTui { 
+        DebianTui { 
             items, 
             state, 
             current_screen: Screen::Selection,
@@ -84,20 +82,19 @@ impl DebianTui {
         }
     }
 
-    fn get_operation_for_item(&self, item_name: &str) -> Option<ArchOperation> {
+    fn get_operation_for_item(&self, item_name: &str) -> Option<DebianOperation> {
         match item_name {
-            "Clean cache" => Some(ArchOperation::CleanCache),
-            "Remove orphaned packages" => Some(ArchOperation::RemoveOrphaned),
-            "Manual unused package removal" => Some(ArchOperation::ManualPackageRemoval),
-            "Repair libraries" => Some(ArchOperation::RepairFlatpak),
-            "Remove unused libraries" => Some(ArchOperation::RemoveUnusedFlatpak),
-            "Manual unused flatpak removal" => Some(ArchOperation::ManualFlatpakRemoval),
-            "Change installation directory" => Some(ArchOperation::ChangeFlatpakDir),
-            "Clear systemd journal" => Some(ArchOperation::ClearSystemdJournal),
-            "Clean general logs" => Some(ArchOperation::CleanGeneralLogs),
-            "Clean user cache" => Some(ArchOperation::CleanUserCache),
-            "pac* file management" => Some(ArchOperation::ManagePacFiles),
-            "Manual orphaned config removal" => Some(ArchOperation::RemoveOrphanedConfigs),
+
+            "APT Repair" => Some(DebianOperation::AptRepair),
+            "Manual unused package removal" => Some(DebianOperation::ManualPackageRemoval),
+            "Repair libraries" => Some(DebianOperation::RepairFlatpak),
+            "Remove unused libraries" => Some(DebianOperation::RemoveUnusedFlatpak),
+            "Manual unused flatpak removal" => Some(DebianOperation::ManualFlatpakRemoval),
+            "Change installation directory" => Some(DebianOperation::ChangeFlatpakDir),
+            "Clear systemd journal" => Some(DebianOperation::ClearSystemdJournal),
+            "Clean general logs" => Some(DebianOperation::CleanGeneralLogs),
+            "Clean user cache" => Some(DebianOperation::CleanUserCache),
+            "Manual orphaned config removal" => Some(DebianOperation::RemoveOrphanedConfigs),
             _ => None,
         }
     }
@@ -383,6 +380,6 @@ impl DebianTui {
 }
 
 fn main() -> Result<(), io::Error> {
-    let mut tui = ArchTui::new();
+    let mut tui = DebianTui::new();
     tui.run()
 }

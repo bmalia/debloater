@@ -1,7 +1,7 @@
 use std::process::Command;
 use colored::Colorize;
 
-pub enum ArchOperation {
+pub enum DebianOperation {
     CleanCache,
     RemoveOrphaned,
     ManualPackageRemoval,
@@ -14,9 +14,10 @@ pub enum ArchOperation {
     CleanUserCache,
     ManagePacFiles,
     RemoveOrphanedConfigs,
+    AptRepair,
 }
 
-impl ArchOperation {
+impl DebianOperation {
     pub fn execute(&self) -> Result<(), String> {
         match self {
             Self::CleanCache => clean_package_cache(),
@@ -31,6 +32,7 @@ impl ArchOperation {
             Self::CleanUserCache => clean_user_cache(),
             Self::ManagePacFiles => manage_pac_files(),
             Self::RemoveOrphanedConfigs => remove_orphaned_configs(),
+            Self::AptRepair => apt_repair(),
         }
     }
 }
@@ -38,7 +40,7 @@ impl ArchOperation {
 fn clean_package_cache() -> Result<(), String> {
     println!("Running Operation: {}", "Clean package cache".bold().green());
     println!("Checking for pacman-contrib package...");
-    let output = Command::new("pacman")
+    let _output = Command::new("pacman")
         .args(["-Qs", "pacman-contrib"])
         .output()
         .map_err(|e| e.to_string())?;
@@ -152,6 +154,15 @@ fn remove_orphaned_configs() -> Result<(), String> {
     Ok(())
 }
 
+fn apt_repair() -> Result<(), String> {
+    println!("Running Operation: {}", "Repair apt".bold().green());
+    let output = Command::new("sudo")
+        .args(["apt", "install", "--fix-broken"])
+        .output()
+        .map_err(|e| e.to_string())?;
+    println!("Operation {} {}", "Repair apt".bold().green(), "completed successfully".green());
+    Ok(())
+}
 
 
 
