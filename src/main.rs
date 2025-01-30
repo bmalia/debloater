@@ -4,7 +4,7 @@ use std::io;
 use colored::Colorize;
 
 mod arch;
-// mod debian;
+mod debian;
 // mod fedora;
 mod operation_descriptions;
 
@@ -15,7 +15,7 @@ fn get_distribution() -> Option<String> {
     
     for line in reader.lines() { // Searches each line of the file for the 'ID=' tag
         if let Ok(line) = line {
-            if (line.starts_with("ID=")) {
+            if line.starts_with("ID=") {
                 return Some(line.replace("ID=", "").replace("\"", ""));
             }
         }
@@ -25,10 +25,10 @@ fn get_distribution() -> Option<String> {
 
 fn handle_debian() {
     println!("Handling Debian-based distribution");
-    /* let mut tui = debian::tui::DebTui::new();
+    let mut tui = debian::tui::DebianTui::new();
     if let Err(e) = tui.run() {
         eprintln!("Error running Debian TUI: {}", e); 
-    } */
+    }
 }
 
 fn handle_arch() {
